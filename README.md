@@ -33,21 +33,3 @@ Arguments:
  * `--setting`: (defualt: `0`)
    * `0`: Standard CIFAR-10 experiment. Evaluate a CIFAR-10 multi-class classifier on testing dataset.
  * `--save_path`: Path (directory) that model is saved. (default: `'.'`)
-
-### Plot
-
-```
-python plot.py --data [DATA PATHS]
-```
-
-Arguments:
-
- * `--data`: Paths that data are saved. It can be assigned by multiple paths.
- * `--name`: Names of the data. It can be assigned by multiple names. (default: None)
- * `--title`: Figure title. (default: `'Training Curve'`)
- * `--xlabel`: Description of x-coordinate. (default: `'Epochs'`)
- * `--ylabel`: Description of y-coordinate. (default: `'Accuracy'`)
- * `--figure_num`: Figure ID. (default: None)
- * `--save`: Whether to save the figure or not. (default: True)
- * `--display`: Whether to display the figure or not. (default: True)
- * `--filename`: Name of the saved figure. (default: `'figure.png'`)
