@@ -33,5 +33,5 @@ Arguments:
 
  * `--setting`: (default: `0`)
    * `0`: Standard CIFAR-10 experiment. Evaluate a CIFAR-10 multi-class classifier on testing dataset.
-   * `1`: The training setting is the same as setting `0`, but instead of recording the multiclass classification accuracy, it records the binary classification accuracy for each class. 
+   * `1`: The model is the same as setting `0`, but instead of recording the multiclass classification accuracy, it records the binary classification accuracy for each class. 
  * `--save_path`: Path (directory) that model is saved. (default: `'.'`)
