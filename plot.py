@@ -14,8 +14,8 @@ def parse_args():
     parser.add_argument('--ylabel', type=str, default='Accuracy')
     parser.add_argument('--figure_num', type=int, default=None)
 
-    parser.add_argument('--save', type=bool, default=True)
-    parser.add_argument('--display', type=bool, default=True)
+    parser.add_argument('--save', action='store_true')
+    parser.add_argument('--display', action='store_true')
 
     parser.add_argument('--filename', type=str, default='figure.png')
 
