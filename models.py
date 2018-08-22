@@ -1,23 +1,51 @@
 import torch.nn as nn
-import torch.nn.functional as F
+
+
+class Encoder(nn.Module):
+    def __init__(self):
+        super(Encoder, self).__init__()
+        self.convs = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 32, kernel_size=3),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 32, kernel_size=3),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 32, kernel_size=3),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, input):
+        x = self.convs(input)
+        x = x.view(x.size(0), -1)
+
+        return x
+
+
+class Decoder(nn.Module):
+    def __init__(self, num_classes):
+        super(Decoder, self).__init__()
+        self.fcs = nn.Sequential(
+            nn.Linear(32*24*24, 256),
+            nn.Linear(256, 128),
+            nn.Linear(128, num_classes),
+        )
+
+    def forward(self, input):
+        x = self.fcs(input)
+
+        return x
 
 
 class SingleTaskModel(nn.Module):
     def __init__(self, num_classes):
         super(SingleTaskModel, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16*5*5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, num_classes)
+        self.encoder = Encoder()
+        self.decoder = Decoder(num_classes)
+
 
     def forward(self, input):
-        x = self.pool(F.relu(self.conv1(input)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16*5*5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.encoder(input)
+        x = self.decoder(x)
 
         return x
