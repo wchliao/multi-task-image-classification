@@ -1,4 +1,3 @@
-import os
 import json
 import argparse
 import numpy as np
@@ -17,11 +16,10 @@ def parse_args():
 def main():
     args = parse_args()
 
-    filename, ext = os.path.splitext(args.input)
     data = []
 
     for i in range(args.num):
-        with open(filename + str(i) + ext, 'r') as f:
+        with open(args.input + str(i) + '.json', 'r') as f:
             data.append(json.load(f))
 
     data = [np.mean(d) for d in zip(*data)]
