@@ -14,8 +14,8 @@ Arguments:
  * `--xlabel`: Description of x-coordinate. (default: `'Epochs'`)
  * `--ylabel`: Description of y-coordinate. (default: `'Accuracy'`)
  * `--figure_num`: Figure ID. (default: None)
- * `--save`: Whether to save the figure or not. (default: True)
- * `--display`: Whether to display the figure or not. (default: True)
+ * `--save`: A flag used to decide whether to save the figure or not.
+ * `--display`: A flag used to decide whether to display the figure or not. 
  * `--filename`: Name of the saved figure. (default: `'figure.png'`)
 
 ### Average Records
