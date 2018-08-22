@@ -31,7 +31,7 @@ class StandardAgent(BaseAgent):
 
 
     def train(self, train_data, test_data, save_history=False, save_path='.', verbose=False):
-        criterion =nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters())
         accuracy = []
 
@@ -51,12 +51,16 @@ class StandardAgent(BaseAgent):
                 print('[Epoch {}] Accuracy: {}'.format(epoch+1, accuracy[-1]))
 
         if save_history:
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
-            filename = os.path.join(save_path, 'history.json')
+            self._save_history(accuracy, save_path)
 
-            with open(filename, 'w') as f:
-                json.dump(accuracy, f)
+
+    def _save_history(self, history, save_path):
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
+        filename = os.path.join(save_path, 'history.json')
+
+        with open(filename, 'w') as f:
+            json.dump(history, f)
 
 
     def eval(self, data):
@@ -87,3 +91,37 @@ class StandardAgent(BaseAgent):
         if os.path.isdir(save_path):
             filename = os.path.join(save_path, 'model')
             self.model.load_state_dict(torch.load(filename))
+
+
+class StandardAgentSeparateRecord(StandardAgent):
+    def __init__(self):
+        super(StandardAgentSeparateRecord, self).__init__()
+
+
+    def _save_history(self, history, save_path):
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
+
+        for i, h in enumerate(zip(*history)):
+            filename = os.path.join(save_path, 'history_class{}.json'.format(i))
+
+            with open(filename, 'w') as f:
+                json.dump(h, f)
+
+
+    def eval(self, data):
+        correct = [0 for _ in range(10)]
+        total = 0
+
+        with torch.no_grad():
+            for inputs, labels in data:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                outputs = self.model(inputs)
+                _, predict_labels = torch.max(outputs.detach(), 1)
+
+                total += labels.size(0)
+
+                for c in range(10):
+                    correct[c] += ((predict_labels == c) == (labels == c)).sum().item()
+
+            return [c / total for c in correct]
