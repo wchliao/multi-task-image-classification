@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 import json
-import numpy as np
 from models import Encoder
 from models import StandardModel, SharedEncoderModel
 
@@ -169,14 +168,18 @@ class MultiTaskSeparateAgent:
                 print('[Epoch {}] Accuracy: {}'.format(epoch+1, accuracy[-1]))
 
         if save_history:
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
+            self._save_history(accuracy, save_path)
 
-            for i, h in enumerate(zip(*accuracy)):
-                filename = os.path.join(save_path, 'history_class{}.json'.format(i))
 
-                with open(filename, 'w') as f:
-                    json.dump(h, f)
+    def _save_history(self, history, save_path):
+        if not os.path.isdir(save_path):
+            os.makedirs(save_path)
+
+        for i, h in enumerate(zip(*history)):
+            filename = os.path.join(save_path, 'history_class{}.json'.format(i))
+
+            with open(filename, 'w') as f:
+                json.dump(h, f)
 
 
     def eval(self, data):
@@ -223,9 +226,9 @@ class MultiTaskJointAgent(MultiTaskSeparateAgent):
         super(MultiTaskJointAgent, self).__init__(num_tasks, num_classes)
 
         if loss_weight is None:
-            self.loss_weight = np.ones(self.num_tasks) / self.num_tasks
+            self.loss_weight = torch.ones(self.num_tasks, device=self.device) / self.num_tasks
         else:
-            self.loss_weight = loss_weight
+            self.loss_weight = torch.Tensor(loss_weight).to(self.device)
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
@@ -247,7 +250,7 @@ class MultiTaskJointAgent(MultiTaskSeparateAgent):
 
                 for t, model in enumerate(self.models):
                     outputs = model(inputs)
-                    loss += criterion(outputs, (labels == t).long())
+                    loss += self.loss_weight[t] * criterion(outputs, (labels == t).long())
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -259,11 +262,4 @@ class MultiTaskJointAgent(MultiTaskSeparateAgent):
                 print('[Epoch {}] Accuracy: {}'.format(epoch+1, accuracy[-1]))
 
         if save_history:
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
-
-            for i, h in enumerate(zip(*accuracy)):
-                filename = os.path.join(save_path, 'history_class{}.json'.format(i))
-
-                with open(filename, 'w') as f:
-                    json.dump(h, f)
+            self._save_history(accuracy, save_path)

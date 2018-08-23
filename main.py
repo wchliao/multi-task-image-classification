@@ -16,7 +16,8 @@ def parse_args():
                                                                '2: Single task experiment \n'
                                                                '3: Multi-task experiment (trained separately) \n'
                                                                '4: Multi-task experiment (trained separately with biased sample probability) \n'
-                                                               '5: Multi-task experiment (trained jointly)')
+                                                               '5: Multi-task experiment (trained jointly) \n'
+                                                               '6: Multi-task experiment (trained jointly with biased weighted loss)')
     parser.add_argument('--task', type=int, default=None, help='Which class to distinguish (for setting 2)')
     parser.add_argument('--save_path', type=str, default='.')
     parser.add_argument('--save_model', action='store_true')
@@ -52,6 +53,10 @@ def train(args):
         agent = MultiTaskSeparateAgent(num_tasks=10, num_classes=2, task_prob=prob)
     elif args.setting == 5:
         agent = MultiTaskJointAgent(num_tasks=10, num_classes=2)
+    elif args.setting == 6:
+        weight = np.arange(1, 11)
+        weight = weight / sum(weight)
+        agent = MultiTaskJointAgent(num_tasks=10, num_classes=2, loss_weight=weight)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
@@ -81,7 +86,7 @@ def eval(args):
         data = data.get_loader(args.task)
     elif args.setting == 3 or args.setting == 4:
         agent = MultiTaskSeparateAgent(num_tasks=10, num_classes=2)
-    elif args.setting == 5:
+    elif args.setting == 5 or args.setting == 6:
         agent = MultiTaskJointAgent(num_tasks=10, num_classes=2)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
