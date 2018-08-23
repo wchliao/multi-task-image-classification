@@ -65,7 +65,7 @@ def eval(args):
         data = data.get_loader()
     elif args.setting == 2:
         assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
-        agent = SingleTaskAgent(args.task)
+        agent = SingleTaskAgent(num_classes=2)
         data = data.get_loader(args.task)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
