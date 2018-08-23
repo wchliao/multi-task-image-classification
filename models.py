@@ -6,13 +6,17 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.convs = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 32, kernel_size=3),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 32, kernel_size=3),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 32, kernel_size=3),
-            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
         )
 
     def forward(self, input):
@@ -26,9 +30,10 @@ class Decoder(nn.Module):
     def __init__(self, num_classes):
         super(Decoder, self).__init__()
         self.fcs = nn.Sequential(
-            nn.Linear(32*24*24, 256),
-            nn.Linear(256, 128),
-            nn.Linear(128, num_classes),
+            nn.Linear(64*5*5, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Linear(256, num_classes),
         )
 
     def forward(self, input):

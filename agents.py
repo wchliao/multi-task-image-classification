@@ -35,7 +35,7 @@ class StandardAgent(BaseAgent):
         optimizer = optim.Adam(self.model.parameters())
         accuracy = []
 
-        for epoch in range(30):
+        for epoch in range(20):
             for _, (inputs, labels) in enumerate(train_data):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
