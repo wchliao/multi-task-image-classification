@@ -1,6 +1,6 @@
 import argparse
-from agents import StandardAgent, StandardAgentSeparateRecord, SingleTaskAgent
-from utils import DataLoader
+from agents import SingleTaskAgent, SingleTaskAgentSeparateRecord
+from utils import CIFAR10Loader
 
 
 def parse_args():
@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument('--setting', type=int, default=0, help='0: Standard CIFAR-10 experiment \n'
                                                                '1: Standard CIFAR-10 experiment (recording each class\' accuracy separately) \n'
                                                                '2: Single task experiment')
-    parser.add_argument('--task', type=int, default=0, help='Which class to distinguish (for setting 2)')
+    parser.add_argument('--task', type=int, default=None, help='Which class to distinguish (for setting 2)')
     parser.add_argument('--save_path', type=str, default='.')
     parser.add_argument('--save_model', action='store_true')
     parser.add_argument('--save_history', action='store_true')
@@ -24,18 +24,24 @@ def parse_args():
 
 
 def train(args):
+    train_data = CIFAR10Loader(batch_size=128, train=True)
+    test_data = CIFAR10Loader(batch_size=128, train=False)
+
     if args.setting == 0:
-        agent = StandardAgent()
+        agent = SingleTaskAgent(num_classes=10)
+        train_data = train_data.get_loader()
+        test_data = test_data.get_loader()
     elif args.setting == 1:
-        agent = StandardAgentSeparateRecord()
+        agent = SingleTaskAgentSeparateRecord(num_classes=10)
+        train_data = train_data.get_loader()
+        test_data = test_data.get_loader()
     elif args.setting == 2:
         assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
-        agent = SingleTaskAgent(args.task)
+        agent = SingleTaskAgent(num_classes=2)
+        train_data = train_data.get_loader(args.task)
+        test_data = test_data.get_loader(args.task)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
-
-    train_data = DataLoader(batch_size=128, train=True)
-    test_data = DataLoader(batch_size=128, train=False)
 
     agent.train(train_data=train_data,
                 test_data=test_data,
@@ -49,18 +55,22 @@ def train(args):
 
 
 def eval(args):
+    data = CIFAR10Loader(batch_size=128, train=False)
+
     if args.setting == 0:
-        agent = StandardAgent()
+        agent = SingleTaskAgent(num_classes=10)
+        data = data.get_loader()
     elif args.setting == 1:
-        agent = StandardAgentSeparateRecord()
+        agent = SingleTaskAgentSeparateRecord(num_classes=10)
+        data = data.get_loader()
     elif args.setting == 2:
         assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
         agent = SingleTaskAgent(args.task)
+        data = data.get_loader(args.task)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
     agent.load_model(args.save_path)
-    data = DataLoader(batch_size=128, train=False)
     accuracy = agent.eval(data)
 
     print('Accuracy: {}'.format(accuracy))

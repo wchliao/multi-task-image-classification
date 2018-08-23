@@ -23,19 +23,19 @@ class BaseAgent:
         pass
 
 
-class StandardAgent(BaseAgent):
-    def __init__(self):
-        super(StandardAgent, self).__init__()
+class SingleTaskAgent(BaseAgent):
+    def __init__(self, num_classes):
+        super(SingleTaskAgent, self).__init__()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = SingleTaskModel(num_classes=10).to(self.device)
+        self.model = SingleTaskModel(num_classes=num_classes).to(self.device)
 
 
-    def train(self, train_data, test_data, save_history=False, save_path='.', verbose=False):
+    def train(self, train_data, test_data, num_epochs=20, save_history=False, save_path='.', verbose=False):
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters())
         accuracy = []
 
-        for epoch in range(20):
+        for epoch in range(num_epochs):
             for _, (inputs, labels) in enumerate(train_data):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
@@ -93,9 +93,9 @@ class StandardAgent(BaseAgent):
             self.model.load_state_dict(torch.load(filename))
 
 
-class StandardAgentSeparateRecord(StandardAgent):
-    def __init__(self):
-        super(StandardAgentSeparateRecord, self).__init__()
+class SingleTaskAgentSeparateRecord(SingleTaskAgent):
+    def __init__(self, num_classes):
+        super(SingleTaskAgentSeparateRecord, self).__init__(num_classes=num_classes)
 
 
     def _save_history(self, history, save_path):
@@ -125,70 +125,3 @@ class StandardAgentSeparateRecord(StandardAgent):
                     correct[c] += ((predict_labels == c) == (labels == c)).sum().item()
 
             return [c / total for c in correct]
-
-
-class SingleTaskAgent(BaseAgent):
-    def __init__(self, task):
-        super(SingleTaskAgent, self).__init__()
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = SingleTaskModel(num_classes=2).to(self.device)
-        self.task = task
-
-
-    def train(self, train_data, test_data, save_history=False, save_path='.', verbose=False):
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters())
-        accuracy = []
-
-        for epoch in range(20):
-            for _, (inputs, labels) in enumerate(train_data):
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.model(inputs)
-                loss = criterion(outputs, (labels == self.task).long())
-
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-            accuracy.append(self.eval(test_data))
-
-            if verbose:
-                print('[Epoch {}] Accuracy: {}'.format(epoch+1, accuracy[-1]))
-
-        if save_history:
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
-            filename = os.path.join(save_path, 'history.json')
-
-            with open(filename, 'w') as f:
-                json.dump(accuracy, f)
-
-
-    def eval(self, data):
-        correct = 0
-        total = 0
-
-        with torch.no_grad():
-            for inputs, labels in data:
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.model(inputs)
-                _, predict_labels = torch.max(outputs.detach(), 1)
-
-                total += labels.size(0)
-                correct += (predict_labels == (labels == self.task).long()).sum().item()
-
-            return correct / total
-
-
-    def save_model(self, save_path='.'):
-        if not os.path.isdir(save_path):
-            os.makedirs(save_path)
-        filename = os.path.join(save_path, 'model')
-
-        torch.save(self.model.state_dict(), filename)
-
-
-    def load_model(self, save_path='.'):
-        if os.path.isdir(save_path):
-            filename = os.path.join(save_path, 'model')
-            self.model.load_state_dict(torch.load(filename))
