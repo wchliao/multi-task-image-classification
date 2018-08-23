@@ -21,6 +21,7 @@ Arguments:
    * `2`: Single task experiment. Train a binary classifier to distinguish whether an image belongs to a certain class or not.
    * `3`: Multi-task experiment. Train a multi-task model for each task. For each iteration, (uniform) randomly choose a task to train.
    * `4`: Same as `3`, but use a certain (biased) probability to choose tasks to train.
+   * `5`: Multi-task experiment. Train a multi-task model for each task with a (uniformly) summed loss.
  * `--task`: Which class to distinguish (for setting `2`) (default: `0`) 
  * `--save_path`: Path (directory) that model and history are saved. (default: `'.'`)
  * `--save_model`: A flag used to decide whether to save model or not.
@@ -41,4 +42,5 @@ Arguments:
    * `2`: Single task experiment. Evaluate a single task on a certain task.
    * `3`: Multi-task experiment (trained separately). Evaluate a multi-task model for each task.
    * `4`: Same as `3`. 
+   * `5`: Multi-task experiment (trained jointly). Evaluate a multi-task model for each task.
  * `--save_path`: Path (directory) that model is saved. (default: `'.'`)

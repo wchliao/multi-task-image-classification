@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 import json
-import random
+import numpy as np
 from models import Encoder
 from models import StandardModel, SharedEncoderModel
 
@@ -210,3 +210,60 @@ class MultiTaskSeparateAgent:
             for t, model in enumerate(self.models):
                 filename = os.path.join(save_path, 'model{}'.format(t))
                 model.load_state_dict(torch.load(filename))
+
+
+class MultiTaskJointAgent(MultiTaskSeparateAgent):
+    """
+    MultiTaskJointAgent can only be used in tasks that shares the same inputs.
+    For CIFAR datasets, it can only apply to CIFAR-10 multi-task experiments.
+    CIFAR-100 multi-task experiments are not applicable.
+    """
+
+    def __init__(self, num_tasks, num_classes, loss_weight=None):
+        super(MultiTaskJointAgent, self).__init__(num_tasks, num_classes)
+
+        if loss_weight is None:
+            self.loss_weight = np.ones(self.num_tasks) / self.num_tasks
+        else:
+            self.loss_weight = loss_weight
+
+
+    def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
+        dataloader = train_data.get_loader()
+        criterion = nn.CrossEntropyLoss()
+
+        parameters = []
+        for model in self.models:
+            parameters += model.parameters()
+        parameters = set(parameters)
+        optimizer = optim.Adam(parameters)
+
+        accuracy = []
+
+        for epoch in range(num_epochs):
+            for inputs, labels in dataloader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                loss = 0.
+
+                for t, model in enumerate(self.models):
+                    outputs = model(inputs)
+                    loss += criterion(outputs, (labels == t).long())
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+            accuracy.append(self.eval(test_data))
+
+            if verbose:
+                print('[Epoch {}] Accuracy: {}'.format(epoch+1, accuracy[-1]))
+
+        if save_history:
+            if not os.path.isdir(save_path):
+                os.makedirs(save_path)
+
+            for i, h in enumerate(zip(*accuracy)):
+                filename = os.path.join(save_path, 'history_class{}.json'.format(i))
+
+                with open(filename, 'w') as f:
+                    json.dump(h, f)

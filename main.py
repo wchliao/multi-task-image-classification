@@ -1,6 +1,6 @@
 import numpy as np
 import argparse
-from agents import SingleTaskAgent, StandardAgent, MultiTaskSeparateAgent
+from agents import SingleTaskAgent, StandardAgent, MultiTaskSeparateAgent, MultiTaskJointAgent
 from utils import CIFAR10Loader
 
 
@@ -15,7 +15,8 @@ def parse_args():
                                                                '1: Standard CIFAR-10 experiment (recording each class\' accuracy separately) \n'
                                                                '2: Single task experiment \n'
                                                                '3: Multi-task experiment (trained separately) \n'
-                                                               '4: Multi-task experiment (trained separately with biased sample probability)')
+                                                               '4: Multi-task experiment (trained separately with biased sample probability) \n'
+                                                               '5: Multi-task experiment (trained jointly)')
     parser.add_argument('--task', type=int, default=None, help='Which class to distinguish (for setting 2)')
     parser.add_argument('--save_path', type=str, default='.')
     parser.add_argument('--save_model', action='store_true')
@@ -49,6 +50,8 @@ def train(args):
         prob = np.arange(1, 11)
         prob = prob / sum(prob)
         agent = MultiTaskSeparateAgent(num_tasks=10, num_classes=2, task_prob=prob)
+    elif args.setting == 5:
+        agent = MultiTaskJointAgent(num_tasks=10, num_classes=2)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
@@ -78,6 +81,8 @@ def eval(args):
         data = data.get_loader(args.task)
     elif args.setting == 3 or args.setting == 4:
         agent = MultiTaskSeparateAgent(num_tasks=10, num_classes=2)
+    elif args.setting == 5:
+        agent = MultiTaskJointAgent(num_tasks=10, num_classes=2)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
