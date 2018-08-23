@@ -1,5 +1,5 @@
 import argparse
-from agents import StandardAgent, StandardAgentSeparateRecord
+from agents import StandardAgent, StandardAgentSeparateRecord, SingleTaskAgent
 from utils import DataLoader
 
 
@@ -11,7 +11,9 @@ def parse_args():
     mode.add_argument('--eval', action='store_true')
 
     parser.add_argument('--setting', type=int, default=0, help='0: Standard CIFAR-10 experiment \n'
-                                                               '1: Standard CIFAR-10 experiment (recording each class\' accuracy separately)')
+                                                               '1: Standard CIFAR-10 experiment (recording each class\' accuracy separately) \n'
+                                                               '2: Single task experiment')
+    parser.add_argument('--task', type=int, default=0, help='Which class to distinguish (for setting 2)')
     parser.add_argument('--save_path', type=str, default='.')
     parser.add_argument('--save_model', action='store_true')
     parser.add_argument('--save_history', action='store_true')
@@ -26,6 +28,9 @@ def train(args):
         agent = StandardAgent()
     elif args.setting == 1:
         agent = StandardAgentSeparateRecord()
+    elif args.setting == 2:
+        assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
+        agent = SingleTaskAgent(args.task)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
@@ -48,6 +53,9 @@ def eval(args):
         agent = StandardAgent()
     elif args.setting == 1:
         agent = StandardAgentSeparateRecord()
+    elif args.setting == 2:
+        assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
+        agent = SingleTaskAgent(args.task)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
