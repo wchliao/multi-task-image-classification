@@ -1,4 +1,3 @@
-import random
 import numpy as np
 import torch
 import torchvision
@@ -39,7 +38,7 @@ class MultiTaskDataLoader:
             self.step = 0
             raise StopIteration
 
-        task = random.randrange(len(self.dataloaders))
+        task = np.random.choice(list(range(len(self.dataloaders))), p=self.prob)
 
         try:
             data, labels = self.iters[task].__next__()

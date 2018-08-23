@@ -130,17 +130,22 @@ class StandardAgent(SingleTaskAgent):
 
 
 class MultiTaskSeparateAgent:
-    def __init__(self, num_tasks, num_classes):
+    def __init__(self, num_tasks, num_classes, task_prob=None):
         super(MultiTaskSeparateAgent, self).__init__()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         encoder = Encoder()
         self.models = [SharedEncoderModel(encoder=encoder, num_classes=num_classes).to(self.device)
                        for _ in range(num_tasks)]
         self.num_tasks = num_tasks
+        self.task_prob = task_prob
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
-        dataloader = train_data.get_loader('multi-task')
+        if self.task_prob is None:
+            dataloader = train_data.get_loader('multi-task')
+        else:
+            dataloader = train_data.get_loader('multi-task', self.task_prob)
+
         criterion = nn.CrossEntropyLoss()
         optimizers = [optim.Adam(model.parameters()) for model in self.models]
         accuracy = []
