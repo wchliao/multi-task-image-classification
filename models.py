@@ -42,11 +42,25 @@ class Decoder(nn.Module):
         return x
 
 
-class SingleTaskModel(nn.Module):
+class StandardModel(nn.Module):
     def __init__(self, num_classes):
-        super(SingleTaskModel, self).__init__()
+        super(StandardModel, self).__init__()
         self.encoder = Encoder()
         self.decoder = Decoder(num_classes)
+
+
+    def forward(self, input):
+        x = self.encoder(input)
+        x = self.decoder(x)
+
+        return x
+
+
+class SharedEncoderModel(nn.Module):
+    def __init__(self, encoder, num_classes):
+        super(SharedEncoderModel, self).__init__()
+        self.encoder = encoder
+        self.decoder = Decoder(num_classes=num_classes)
 
 
     def forward(self, input):

@@ -1,5 +1,5 @@
 import argparse
-from agents import SingleTaskAgent, StandardAgent
+from agents import SingleTaskAgent, StandardAgent, MultiTaskSeparateAgent
 from utils import CIFAR10Loader
 
 
@@ -12,7 +12,8 @@ def parse_args():
 
     parser.add_argument('--setting', type=int, default=0, help='0: Standard CIFAR-10 experiment \n'
                                                                '1: Standard CIFAR-10 experiment (recording each class\' accuracy separately) \n'
-                                                               '2: Single task experiment')
+                                                               '2: Single task experiment \n'
+                                                               '3: Multi-task experiment (trained separately)')
     parser.add_argument('--task', type=int, default=None, help='Which class to distinguish (for setting 2)')
     parser.add_argument('--save_path', type=str, default='.')
     parser.add_argument('--save_model', action='store_true')
@@ -40,6 +41,8 @@ def train(args):
         agent = SingleTaskAgent(num_classes=2)
         train_data = train_data.get_loader(args.task)
         test_data = test_data.get_loader(args.task)
+    elif args.setting == 3:
+        agent = MultiTaskSeparateAgent(num_tasks=10, num_classes=2)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
@@ -67,6 +70,8 @@ def eval(args):
         assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
         agent = SingleTaskAgent(num_classes=2)
         data = data.get_loader(args.task)
+    elif args.setting == 3:
+        agent = MultiTaskSeparateAgent(num_tasks=10, num_classes=2)
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 

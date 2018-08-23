@@ -1,3 +1,5 @@
+import random
+import numpy as np
 import torch
 import torchvision
 
@@ -14,6 +16,42 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
         return len(self.labels)
 
 
+class MultiTaskDataLoader:
+    def __init__(self, dataloaders, prob='uniform'):
+        self.dataloaders = dataloaders
+        self.iters = [iter(loader) for loader in self.dataloaders]
+
+        if prob is 'uniform':
+            self.prob = np.ones(len(self.dataloaders)) / len(self.dataloaders)
+        else:
+            self.prob = prob
+
+        self.size = len(self.dataloaders[0])
+        self.step = 0
+
+
+    def __iter__(self):
+        return self
+
+
+    def __next__(self):
+        if self.step >= self.size:
+            self.step = 0
+            raise StopIteration
+
+        task = random.randrange(len(self.dataloaders))
+
+        try:
+            data, labels = self.iters[task].__next__()
+        except StopIteration:
+            self.iters[task] = iter(self.dataloaders[task])
+            data, labels = self.iters[task].__next__()
+
+        self.step += 1
+
+        return data, labels, task
+
+
 class CIFAR10Loader:
     def __init__(self, batch_size=128, train=True, shuffle=True):
         transform = torchvision.transforms.Compose(
@@ -24,7 +62,7 @@ class CIFAR10Loader:
         dataset = torchvision.datasets.CIFAR10(root='./data', train=train,
                                                download=True, transform=transform)
         self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
-        self.taskloader = None
+        self.task_dataloader = None
 
         if train:
             self._len = 50000
@@ -35,7 +73,7 @@ class CIFAR10Loader:
         self.shuffle = shuffle
 
 
-    def _create_taskloaders(self):
+    def _create_TaskDataLoaders(self):
         images = []
         labels = []
 
@@ -45,21 +83,25 @@ class CIFAR10Loader:
             for l in batch_labels:
                 labels.append(l)
 
-        self.taskloader = []
+        self.task_dataloader = []
         for t in range(10):
             dataset = CustomDataset(data=images.copy(), labels=[(c == t).long() for c in labels])
             dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=self.shuffle)
-            self.taskloader.append(dataloader)
+            self.task_dataloader.append(dataloader)
 
 
-    def get_loader(self, task=None):
-        if task is None:
+    def get_loader(self, loader='standard', prob='uniform'):
+        if loader == 'standard':
             return self.dataloader
+
+        if self.task_dataloader is None:
+            self._create_TaskDataLoaders()
+
+        if loader == 'multi-task':
+            return MultiTaskDataLoader(self.task_dataloader, prob)
         else:
-            assert task in list(range(10)), 'Unknown task: {}'.format(task)
-            if self.taskloader is None:
-                self._create_taskloaders()
-            return self.taskloader[task]
+            assert loader in list(range(10)), 'Unknown loader: {}'.format(loader)
+            return self.task_dataloader[loader]
 
 
     def __iter__(self):
