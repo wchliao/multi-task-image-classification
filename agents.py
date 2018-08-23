@@ -93,9 +93,9 @@ class SingleTaskAgent(BaseAgent):
             self.model.load_state_dict(torch.load(filename))
 
 
-class SingleTaskAgentSeparateRecord(SingleTaskAgent):
+class StandardAgent(SingleTaskAgent):
     def __init__(self, num_classes):
-        super(SingleTaskAgentSeparateRecord, self).__init__(num_classes=num_classes)
+        super(StandardAgent, self).__init__(num_classes=num_classes)
 
 
     def _save_history(self, history, save_path):

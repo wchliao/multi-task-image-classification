@@ -1,5 +1,5 @@
 import argparse
-from agents import SingleTaskAgent, SingleTaskAgentSeparateRecord
+from agents import SingleTaskAgent, StandardAgent
 from utils import CIFAR10Loader
 
 
@@ -32,7 +32,7 @@ def train(args):
         train_data = train_data.get_loader()
         test_data = test_data.get_loader()
     elif args.setting == 1:
-        agent = SingleTaskAgentSeparateRecord(num_classes=10)
+        agent = StandardAgent(num_classes=10)
         train_data = train_data.get_loader()
         test_data = test_data.get_loader()
     elif args.setting == 2:
@@ -61,7 +61,7 @@ def eval(args):
         agent = SingleTaskAgent(num_classes=10)
         data = data.get_loader()
     elif args.setting == 1:
-        agent = SingleTaskAgentSeparateRecord(num_classes=10)
+        agent = StandardAgent(num_classes=10)
         data = data.get_loader()
     elif args.setting == 2:
         assert args.task in list(range(10)), 'Unknown task: {}'.format(args.task)
