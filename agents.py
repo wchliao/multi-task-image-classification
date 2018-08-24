@@ -217,7 +217,7 @@ class MultiTaskSeparateAgent:
 
 class MultiTaskJointAgent(MultiTaskSeparateAgent):
     """
-    MultiTaskJointAgent can only be used in tasks that shares the same inputs.
+    MultiTaskJointAgent can only be used in tasks that share the same inputs.
     For CIFAR datasets, it can only apply to CIFAR-10 multi-task experiments.
     CIFAR-100 multi-task experiments are not applicable.
     """
