@@ -2,3 +2,7 @@
 __pycache__/
 data/
 save_models/
+
+figure.png
+tools/run.py
+test.py
