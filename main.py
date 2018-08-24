@@ -101,8 +101,10 @@ def main():
     args = parse_args()
     if args.train:
         train(args)
-    else:
+    elif args.eval:
         eval(args)
+    else:
+        print('No flag is assigned. Please assign either \'--train\' or \'--eval\'.')
 
 
 if __name__ == '__main__':
