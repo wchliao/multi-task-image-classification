@@ -67,7 +67,7 @@ def main():
                 figure_num=args.figure_num,
                 display=args.display,
                 save=args.save,
-                filename='figure.png'
+                filename=args.filename
                 )
 
 
