@@ -31,6 +31,8 @@ class SingleTaskAgent(BaseAgent):
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
+        self.model.train()
+
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters())
         accuracy = []
@@ -68,6 +70,8 @@ class SingleTaskAgent(BaseAgent):
         total = 0
 
         with torch.no_grad():
+            self.model.eval()
+
             for inputs, labels in data:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
@@ -75,6 +79,8 @@ class SingleTaskAgent(BaseAgent):
 
                 total += labels.size(0)
                 correct += (predict_labels == labels).sum().item()
+
+            self.model.train()
 
             return correct / total
 
@@ -119,6 +125,8 @@ class StandardAgent(SingleTaskAgent):
         total = 0
 
         with torch.no_grad():
+            self.model.eval()
+
             for inputs, labels in data.get_loader():
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
@@ -129,6 +137,8 @@ class StandardAgent(SingleTaskAgent):
                 for c in range(10):
                     correct[c] += ((predict_labels == c) == (labels == c)).sum().item()
 
+            self.model.train()
+
             return [c / total for c in correct]
 
 
@@ -137,6 +147,8 @@ class StandardAgent(SingleTaskAgent):
         total = [0 for _ in range(20)]
 
         with torch.no_grad():
+            self.model.eval()
+
             for t in range(20):
                 task_labels = data.get_labels(t)
                 for inputs, labels in data.get_loader(t):
@@ -146,6 +158,8 @@ class StandardAgent(SingleTaskAgent):
 
                     total[t] += labels.size(0)
                     correct[t] += (predict_labels == labels).sum().item()
+
+            self.model.train()
 
             return [c / t for c, t in zip(correct, total)]
 
@@ -162,6 +176,9 @@ class MultiTaskSeparateAgent:
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
+        for model in self.models:
+            model.train()
+
         if self.task_prob is None:
             dataloader = train_data.get_loader('multi-task')
         else:
@@ -210,6 +227,8 @@ class MultiTaskSeparateAgent:
 
         with torch.no_grad():
             for t, model in enumerate(self.models):
+                model.eval()
+
                 for inputs, labels in data.get_loader(t):
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
                     outputs = model(inputs)
@@ -217,6 +236,8 @@ class MultiTaskSeparateAgent:
 
                     total[t] += labels.size(0)
                     correct[t] += (predict_labels == labels).sum().item()
+
+                model.train()
 
             return [c / t for c, t in zip(correct, total)]
 
@@ -254,6 +275,9 @@ class MultiTaskJointAgent(MultiTaskSeparateAgent):
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
+        for model in self.models:
+            model.train()
+
         dataloader = train_data.get_loader()
         criterion = nn.CrossEntropyLoss()
 
