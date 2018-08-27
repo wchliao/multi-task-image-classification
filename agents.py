@@ -94,9 +94,13 @@ class SingleTaskAgent(BaseAgent):
 
 
 class StandardAgent(SingleTaskAgent):
-    def __init__(self, num_classes):
-        super(StandardAgent, self).__init__(num_classes=num_classes)
-        self.num_classes = num_classes
+    def __init__(self, CIFAR10):
+        if CIFAR10:
+            super(StandardAgent, self).__init__(num_classes=10)
+            self.eval = self._eval_CIFAR10
+        else:
+            super(StandardAgent, self).__init__(num_classes=100)
+            self.eval = self._eval_CIFAR100
 
 
     def _save_history(self, history, save_path):
@@ -110,22 +114,40 @@ class StandardAgent(SingleTaskAgent):
                 json.dump(h, f)
 
 
-    def eval(self, data):
-        correct = [0 for _ in range(self.num_classes)]
+    def _eval_CIFAR10(self, data):
+        correct = [0 for _ in range(10)]
         total = 0
 
         with torch.no_grad():
-            for inputs, labels in data:
+            for inputs, labels in data.get_loader():
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
                 _, predict_labels = torch.max(outputs.detach(), 1)
 
                 total += labels.size(0)
 
-                for c in range(self.num_classes):
+                for c in range(10):
                     correct[c] += ((predict_labels == c) == (labels == c)).sum().item()
 
             return [c / total for c in correct]
+
+
+    def _eval_CIFAR100(self, data):
+        correct = [0 for _ in range(20)]
+        total = [0 for _ in range(20)]
+
+        with torch.no_grad():
+            for t in range(20):
+                task_labels = data.get_labels(t)
+                for inputs, labels in data.get_loader(t):
+                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                    outputs = self.model(inputs)
+                    _, predict_labels = torch.max(outputs[:, task_labels].detach(), 1)
+
+                    total[t] += labels.size(0)
+                    correct[t] += (predict_labels == labels).sum().item()
+
+            return [c / t for c, t in zip(correct, total)]
 
 
 class MultiTaskSeparateAgent:
@@ -143,7 +165,7 @@ class MultiTaskSeparateAgent:
         if self.task_prob is None:
             dataloader = train_data.get_loader('multi-task')
         else:
-            dataloader = train_data.get_loader('multi-task', self.task_prob)
+            dataloader = train_data.get_loader('multi-task', prob=self.task_prob)
 
         criterion = nn.CrossEntropyLoss()
         optimizers = [optim.Adam(model.parameters()) for model in self.models]
