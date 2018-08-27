@@ -21,15 +21,29 @@ Arguments:
 ### Average Records
 
 ```
-python average.py -i [INPUT_FILE] -n [NUM] -o [OUTPUT]
+python average.py -t [TYPE] -i [INPUT1] -j[INPUT2] -n [NUM] -o [OUTPUT]
 ```
 
 Arguments:
 
-The program will read the data from the files `'INPUT_FILE{}.json'` where `{}` is the number from `0` to `NUM-1`.  
+There are two types, `1` and `2`, that can be used.
+
+#### Type 1
+
+The program will read the data from the files `'INPUT1{}.json'` where `{}` is the number from `0` to `NUM-1`.  
 Then, the program will average the result and output to file `OUTPUT`.  
 For example, executing
 ```
-python average.py -i record -n 3 -o output.json
+python average.py -t 1 -i record -n 3 -o output.json
 ```
 will average the data from `record0.json`, `record1.json` and `record2.json` and output the averaged result to `output.json`.
+
+#### Type 2
+
+The program will read the data from the files `'INPUT1{}/INPUT2.json'` where `{}` is the number from `0` to `NUM-1`.  
+Then, the program will average the result and output to file `OUTPUT`.  
+For example, executing
+```
+python average.py -t 2 -i model -j record -n 3 -o output.json
+```
+will average the data from `model0/record.json`, `model1/record.json` and `model2/record.json` and output the averaged result to `output.json`.
