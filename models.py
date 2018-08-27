@@ -19,6 +19,7 @@ class Encoder(nn.Module):
             nn.ReLU(),
         )
 
+
     def forward(self, input):
         x = self.convs(input)
         x = x.view(x.size(0), -1)
@@ -35,6 +36,7 @@ class Decoder(nn.Module):
             nn.ReLU(),
             nn.Linear(256, num_classes),
         )
+
 
     def forward(self, input):
         x = self.fcs(input)
