@@ -3,6 +3,8 @@ __pycache__/
 data/
 save_models/
 
-figure.png
+*.png
+*.json
+run.py
 tools/run.py
 test.py
