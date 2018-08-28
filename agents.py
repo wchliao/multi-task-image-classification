@@ -3,8 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 import json
-from models import Encoder
-from models import StandardModel, SharedEncoderModel
+from models import Model
 
 
 class BaseAgent:
@@ -27,7 +26,7 @@ class BaseAgent:
 class SingleTaskAgent(BaseAgent):
     def __init__(self, num_classes):
         super(SingleTaskAgent, self).__init__()
-        self.model = StandardModel(num_classes=num_classes).to(self.device)
+        self.model = Model(num_classes=num_classes).to(self.device)
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
@@ -168,9 +167,7 @@ class MultiTaskSeparateAgent:
     def __init__(self, num_tasks, num_classes, task_prob=None):
         super(MultiTaskSeparateAgent, self).__init__()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        encoder = Encoder()
-        self.models = [SharedEncoderModel(encoder=encoder, num_classes=num_classes).to(self.device)
-                       for _ in range(num_tasks)]
+        self.models = [model.to(self.device) for model in Model(num_classes=num_classes, num_tasks=num_tasks)]
         self.num_tasks = num_tasks
         self.task_prob = task_prob
 
