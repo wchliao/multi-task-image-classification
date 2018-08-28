@@ -65,13 +65,13 @@ def train(args):
     elif args.setting == 4:
         prob = np.arange(num_tasks) + 1
         prob = prob / sum(prob)
-        agent = MultiTaskSeparateAgent(num_tasks=num_tasks, num_classes=num_subclasses, task_prob=prob)
+        agent = MultiTaskSeparateAgent(num_tasks=num_tasks, num_classes=num_subclasses, task_prob=prob.tolist())
     elif args.setting == 5:
         agent = MultiTaskJointAgent(num_tasks=num_tasks, num_classes=num_subclasses)
     elif args.setting == 6:
         weight = np.arange(num_tasks) + 1
         weight = weight / sum(weight)
-        agent = MultiTaskJointAgent(num_tasks=num_tasks, num_classes=num_subclasses, loss_weight=weight)
+        agent = MultiTaskJointAgent(num_tasks=num_tasks, num_classes=num_subclasses, loss_weight=weight.tolist())
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 
