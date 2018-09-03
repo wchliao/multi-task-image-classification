@@ -24,10 +24,10 @@ class _Decoder(nn.Module):
     def __init__(self, num_classes):
         super(_Decoder, self).__init__()
         self.fcs = nn.Sequential(
-            nn.Linear(64*5*5, 256),
-            nn.BatchNorm1d(256),
+            nn.Linear(64*8*8, 512),
+            nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Linear(256, num_classes),
+            nn.Linear(512, num_classes),
         )
 
     def forward(self, input):
@@ -53,10 +53,10 @@ class _Model(nn.Module):
 def Model(num_classes, num_tasks=1):
 
     convs = [
-        nn.Conv2d(3, 32, kernel_size=3),
-        nn.Conv2d(32, 32, kernel_size=3, stride=2),
-        nn.Conv2d(32, 64, kernel_size=3),
-        nn.Conv2d(64, 64, kernel_size=3, stride=2)
+        nn.Conv2d(3, 32, kernel_size=3, padding=1),
+        nn.Conv2d(32, 32, kernel_size=3, padding=1, stride=2),
+        nn.Conv2d(32, 64, kernel_size=3, padding=1),
+        nn.Conv2d(64, 64, kernel_size=3, padding=1, stride=2)
     ]
 
     if num_tasks == 1:

@@ -39,14 +39,14 @@ def train(args):
         num_classes = 10
         num_tasks = 10
         num_subclasses = 2
-        num_epochs = 50
+        num_epochs = 100
     else:
         train_data = CIFAR100Loader(batch_size=128, train=True)
         test_data = CIFAR100Loader(batch_size=128, train=False)
         num_classes = 100
         num_tasks = 20
         num_subclasses = 5
-        num_epochs = 100
+        num_epochs = 200
 
     if args.setting == 0:
         agent = SingleTaskAgent(num_classes=num_classes)
