@@ -11,8 +11,8 @@ def parse_args():
     mode.add_argument('--train', action='store_true')
     mode.add_argument('--eval', action='store_true')
 
-    parser.add_argument('--setting', type=int, default=0, help='0: Standard CIFAR-10 experiment \n'
-                                                               '1: Standard CIFAR-10 experiment (recording each class\' accuracy separately) \n'
+    parser.add_argument('--setting', type=int, default=0, help='0: Standard CIFAR experiment \n'
+                                                               '1: Standard CIFAR experiment (recording each class\' accuracy separately) \n'
                                                                '2: Single task experiment \n'
                                                                '3: Multi-task experiment (trained separately) \n'
                                                                '4: Multi-task experiment (trained separately with biased sample probability) \n'
