@@ -19,7 +19,7 @@ class CustomDataset(torch.utils.data.dataset.Dataset):
 
 
 class BaseDataLoader:
-    def __init__(self, batch_size, train, shuffle):
+    def __init__(self, batch_size=1, train=True, shuffle=True, drop_last=False):
         pass
 
     def get_loader(self, loader, prob):
@@ -48,8 +48,8 @@ class BaseDataLoader:
 
 
 class CIFAR10Loader(BaseDataLoader):
-    def __init__(self, batch_size=128, train=True, shuffle=True):
-        super(CIFAR10Loader, self).__init__(batch_size, train, shuffle)
+    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=True):
+        super(CIFAR10Loader, self).__init__(batch_size, train, shuffle, drop_last)
         transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]
@@ -57,12 +57,16 @@ class CIFAR10Loader(BaseDataLoader):
 
         dataset = torchvision.datasets.CIFAR10(root='./data', train=train,
                                                download=True, transform=transform)
-        self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+        self.dataloader = torch.utils.data.DataLoader(dataset,
+                                                      batch_size=batch_size,
+                                                      shuffle=shuffle,
+                                                      drop_last=drop_last)
         self.task_dataloader = None
 
         self._len = 50000 if train else 10000
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.drop_last = drop_last
 
 
     def _create_TaskDataLoaders(self):
@@ -78,7 +82,10 @@ class CIFAR10Loader(BaseDataLoader):
         self.task_dataloader = []
         for t in range(10):
             dataset = CustomDataset(data=images.copy(), labels=[(c == t).long() for c in labels])
-            dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+            dataloader = torch.utils.data.DataLoader(dataset,
+                                                     batch_size=self.batch_size,
+                                                     shuffle=self.shuffle,
+                                                     drop_last=self.drop_last)
             self.task_dataloader.append(dataloader)
 
 
@@ -130,8 +137,8 @@ class CIFAR10Loader(BaseDataLoader):
 
 
 class CIFAR100Loader(BaseDataLoader):
-    def __init__(self, batch_size=128, train=True, shuffle=True):
-        super(CIFAR100Loader, self).__init__(batch_size, train, shuffle)
+    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=True):
+        super(CIFAR100Loader, self).__init__(batch_size, train, shuffle, drop_last)
         transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
              torchvision.transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))]
@@ -139,13 +146,17 @@ class CIFAR100Loader(BaseDataLoader):
 
         dataset = torchvision.datasets.CIFAR100(root='./data', train=train,
                                                download=True, transform=transform)
-        self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+        self.dataloader = torch.utils.data.DataLoader(dataset,
+                                                      batch_size=batch_size,
+                                                      shuffle=shuffle,
+                                                      drop_last=drop_last)
         self.task_dataloader = None
         self.labels = None
 
         self._len = 50000 if train else 10000
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.drop_last = drop_last
 
 
     def _create_TaskDataLoaders(self):
@@ -163,7 +174,10 @@ class CIFAR100Loader(BaseDataLoader):
         self.task_dataloader = []
         for task_images, task_labels in zip(images, labels):
             dataset = CustomDataset(data=task_images, labels=task_labels)
-            dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+            dataloader = torch.utils.data.DataLoader(dataset,
+                                                     batch_size=self.batch_size,
+                                                     shuffle=self.shuffle,
+                                                     drop_last=self.drop_last)
             self.task_dataloader.append(dataloader)
 
 
@@ -224,8 +238,8 @@ class CIFAR100Loader(BaseDataLoader):
 
 
 class OmniglotLoader(BaseDataLoader):
-    def __init__(self, batch_size=128, train=True, shuffle=True):
-        super(OmniglotLoader, self).__init__(batch_size, train, shuffle)
+    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=True):
+        super(OmniglotLoader, self).__init__(batch_size, train, shuffle, drop_last)
         omniglot_path = './data/omniglot'
 
         if os.path.isdir(omniglot_path):
@@ -259,7 +273,10 @@ class OmniglotLoader(BaseDataLoader):
 
                 task_images = np.expand_dims(task_images, 1)
                 dataset = CustomDataset(data=torch.Tensor(task_images).float(), labels=torch.Tensor(task_labels).long())
-                dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+                dataloader = torch.utils.data.DataLoader(dataset,
+                                                         batch_size=batch_size,
+                                                         shuffle=shuffle,
+                                                         drop_last=drop_last)
                 self.task_dataloader.append(dataloader)
 
                 self.num_classes.append(len(np.unique(task_labels)))
@@ -281,7 +298,10 @@ class OmniglotLoader(BaseDataLoader):
         images = torch.from_numpy(images).float()
 
         dataset = CustomDataset(data=images, labels=new_labels)
-        self.dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+        self.dataloader = torch.utils.data.DataLoader(dataset,
+                                                      batch_size=batch_size,
+                                                      shuffle=shuffle,
+                                                      drop_last=drop_last)
 
         self.labels = []
         cnter = 0
@@ -291,6 +311,7 @@ class OmniglotLoader(BaseDataLoader):
 
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.drop_last = drop_last
 
 
     def get_loader(self, loader='standard', prob='uniform'):
