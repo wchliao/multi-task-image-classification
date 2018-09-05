@@ -1,4 +1,4 @@
-# Multi-task Learning For CIFAR Datasets Implemented In PyTorch
+# Multi-task Learning For Image Classification Implemented In PyTorch
 
 ## Introduction
 
@@ -19,6 +19,17 @@ In a standard task, a classifier is trained to classify images into the 100 clas
 In a single task *i*, a classifier is trained to classify images of coarse *i* into 5 classes.  
 In a multi task, 20 classifiers are trained. For classifier *i*, it is trained to classify images of coarse *i* into 5 classes.
 
+### Omniglot
+
+Omniglot is a dataset that contains 1623 different handwritten characters from 50 different alphabets.
+
+In a standard task, a classifier is trained to classify images into the 1623 classes.  
+In a single task *i*, a classifier is trained to classify images of alphabet *i*.  
+In a multi task, 50 classifiers are trained. For classifier *i*, it is trained to classify images of alphabet *i*.
+
+**Note that the network architecture in this repo is not designed for Omniglot. It is very likely to run out of memory with the architecture.  
+To run on Omniglot, please modify the network architecture in `models.py`.**
+
 ## Usage
 
 ### Train
@@ -37,8 +48,11 @@ Arguments:
    * `4`: Train a multi-task model, which contains a classifier for each task. For each iteration, randomly choose a task (in non-uniform distribution) to train.
    * `5`: Train a multi-task model, which contains a classifier for each task, with a unweighted summed loss. (Only applicable for CIFAR-10)
    * `6`: Train a multi-task model, which contains a classifier for each task, with a weighted summed loss. (Only applicable for CIFAR-10)
- * `--task`: Which class to distinguish (for setting `2`) (default: None)
- * `--CIFAR10`: If it is assigned, CIFAR-10 dataset will be used. Otherwise, CIFAR-100 will be used. 
+ * `--data`: (default: `1`)
+   * `0`: CIFAR-10
+   * `1`: CIFAR-100
+   * `2`: Omniglot
+ * `--task`: Which class to distinguish (for setting `2`) (default: None) 
  * `--save_path`: Path (directory) that model and history are saved. (default: `'.'`)
  * `--save_model`: A flag used to decide whether to save model or not.
  * `--save_history`: A flag used to decide whether to save training history or not.
@@ -60,6 +74,9 @@ Arguments:
    * `4`: Same as `3`. 
    * `5`: Evaluate a multi-task model for each task. (Only applicable for CIFAR-10)
    * `6`: Same as `5`. 
+ * `--data`: (default: `1`)
+   * `0`: CIFAR-10
+   * `1`: CIFAR-100
+   * `2`: Omniglot
  * `--task`: Which class to distinguish (for setting `2`) (default: None)
- * `--CIFAR10`: If it is assigned, CIFAR-10 dataset will be used. Otherwise, CIFAR-100 will be used. 
  * `--save_path`: Path (directory) that model is saved. (default: `'.'`)

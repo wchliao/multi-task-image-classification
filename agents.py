@@ -24,9 +24,9 @@ class BaseAgent:
 
 
 class SingleTaskAgent(BaseAgent):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, num_channels):
         super(SingleTaskAgent, self).__init__()
-        self.model = Model(num_classes=num_classes).to(self.device)
+        self.model = Model(num_classes=num_classes, num_channels=num_channels).to(self.device)
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
@@ -99,13 +99,17 @@ class SingleTaskAgent(BaseAgent):
 
 
 class StandardAgent(SingleTaskAgent):
-    def __init__(self, CIFAR10):
-        if CIFAR10:
-            super(StandardAgent, self).__init__(num_classes=10)
-            self.eval = self._eval_CIFAR10
+    def __init__(self, num_classes_single, num_classes_multi, multi_task_type, num_channels):
+        if multi_task_type == 'binary':
+            super(StandardAgent, self).__init__(num_classes=num_classes_single, num_channels=num_channels)
+            self.eval = self._eval_binary
+            self.num_classes = num_classes_single
+        elif multi_task_type == 'multiclass':
+            super(StandardAgent, self).__init__(num_classes=num_classes_single)
+            self.eval = self._eval_multiclass
+            self.num_classes = num_classes_multi
         else:
-            super(StandardAgent, self).__init__(num_classes=100)
-            self.eval = self._eval_CIFAR100
+            raise ValueError('Unknown multi-task type: {}'.format(multi_task_type))
 
 
     def _save_history(self, history, save_path):
@@ -119,8 +123,8 @@ class StandardAgent(SingleTaskAgent):
                 json.dump(h, f)
 
 
-    def _eval_CIFAR10(self, data):
-        correct = [0 for _ in range(10)]
+    def _eval_binary(self, data):
+        correct = [0 for _ in range(self.num_classes)]
         total = 0
 
         with torch.no_grad():
@@ -133,7 +137,7 @@ class StandardAgent(SingleTaskAgent):
 
                 total += labels.size(0)
 
-                for c in range(10):
+                for c in range(self.num_classes):
                     correct[c] += ((predict_labels == c) == (labels == c)).sum().item()
 
             self.model.train()
@@ -141,14 +145,15 @@ class StandardAgent(SingleTaskAgent):
             return [c / total for c in correct]
 
 
-    def _eval_CIFAR100(self, data):
-        correct = [0 for _ in range(20)]
-        total = [0 for _ in range(20)]
+    def _eval_multiclass(self, data):
+        num_tasks = len(self.num_classes)
+        correct = [0 for _ in range(num_tasks)]
+        total = [0 for _ in range(num_tasks)]
 
         with torch.no_grad():
             self.model.eval()
 
-            for t in range(20):
+            for t in range(num_tasks):
                 task_labels = data.get_labels(t)
                 for inputs, labels in data.get_loader(t):
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -164,12 +169,12 @@ class StandardAgent(SingleTaskAgent):
 
 
 class MultiTaskSeparateAgent:
-    def __init__(self, num_tasks, num_classes, task_prob=None):
+    def __init__(self, num_classes, num_channels, task_prob=None):
         super(MultiTaskSeparateAgent, self).__init__()
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.models = [model.to(self.device) for model in Model(num_classes=num_classes, num_tasks=num_tasks)]
-        self.num_tasks = num_tasks
+        self.num_tasks = len(num_classes)
         self.task_prob = task_prob
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.models = [model.to(self.device) for model in Model(num_classes=num_classes, num_channels=num_channels)]
 
 
     def train(self, train_data, test_data, num_epochs=50, save_history=False, save_path='.', verbose=False):
@@ -258,12 +263,15 @@ class MultiTaskSeparateAgent:
 class MultiTaskJointAgent(MultiTaskSeparateAgent):
     """
     MultiTaskJointAgent can only be used in tasks that share the same inputs.
-    For CIFAR datasets, it can only apply to CIFAR-10 multi-task experiments.
-    CIFAR-100 multi-task experiments are not applicable.
+    Currently it can only apply to CIFAR-10 multi-task experiments.
+    CIFAR-100 and Omniglot multi-task experiments are not applicable.
     """
 
-    def __init__(self, num_tasks, num_classes, loss_weight=None):
-        super(MultiTaskJointAgent, self).__init__(num_tasks, num_classes)
+    def __init__(self, num_classes, multi_task_type, num_channels, loss_weight=None):
+        if multi_task_type == 'multiclass':
+            raise ValueError('Multi-task type \'multiclass\' is not suitable to MultiTaskJointAgent.')
+
+        super(MultiTaskJointAgent, self).__init__(num_classes, num_channels)
 
         if loss_weight is None:
             self.loss_weight = torch.ones(self.num_tasks, device=self.device) / self.num_tasks
