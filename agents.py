@@ -105,7 +105,7 @@ class StandardAgent(SingleTaskAgent):
             self.eval = self._eval_binary
             self.num_classes = num_classes_single
         elif multi_task_type == 'multiclass':
-            super(StandardAgent, self).__init__(num_classes=num_classes_single)
+            super(StandardAgent, self).__init__(num_classes=num_classes_single, num_channels=num_channels)
             self.eval = self._eval_multiclass
             self.num_classes = num_classes_multi
         else:
