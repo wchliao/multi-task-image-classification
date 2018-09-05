@@ -1,21 +1,14 @@
+import torch
 import torch.nn as nn
 
 
 class _Encoder(nn.Module):
-    def __init__(self, shared_layers):
+    def __init__(self, layers):
         super(_Encoder, self).__init__()
-
-        layers = []
-        for layer in shared_layers:
-            layers.append(layer)
-            layers.append(nn.BatchNorm2d(layer.out_channels))
-            layers.append(nn.ReLU())
-
-        self.convs = nn.Sequential(*layers)
+        self.layers = nn.Sequential(*layers)
 
     def forward(self, input):
-        x = self.convs(input)
-        x = x.view(x.size(0), -1)
+        x = self.layers(input)
 
         return x
 
@@ -23,15 +16,17 @@ class _Encoder(nn.Module):
 class _Decoder(nn.Module):
     def __init__(self, num_classes):
         super(_Decoder, self).__init__()
-        self.fcs = nn.Sequential(
-            nn.Linear(64*8*8, 512),
-            nn.BatchNorm1d(512),
+        self.layers = nn.Sequential(
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.Linear(512, num_classes),
+            nn.Conv2d(128, num_classes, kernel_size=1),
+            nn.AvgPool2d(kernel_size=8),
         )
 
     def forward(self, input):
-        x = self.fcs(input)
+        x = self.layers(input)
+        x = torch.squeeze(x)
 
         return x
 
@@ -52,16 +47,30 @@ class _Model(nn.Module):
 
 def Model(num_classes, num_tasks=1):
 
-    convs = [
+    layers = [
         nn.Conv2d(3, 32, kernel_size=3, padding=1),
-        nn.Conv2d(32, 32, kernel_size=3, padding=1, stride=2),
+        nn.BatchNorm2d(32),
+        nn.ReLU(),
         nn.Conv2d(32, 64, kernel_size=3, padding=1),
-        nn.Conv2d(64, 64, kernel_size=3, padding=1, stride=2)
+        nn.BatchNorm2d(64),
+        nn.ReLU(),
+        nn.AvgPool2d(kernel_size=3, padding=1, stride=2),
+        nn.BatchNorm2d(64),
+        nn.ReLU(),
+        nn.Conv2d(64, 64, kernel_size=3, padding=1),
+        nn.BatchNorm2d(64),
+        nn.ReLU(),
+        nn.Conv2d(64, 128, kernel_size=3, padding=1),
+        nn.BatchNorm2d(128),
+        nn.ReLU(),
+        nn.AvgPool2d(kernel_size=3, padding=1, stride=2),
+        nn.BatchNorm2d(128),
+        nn.ReLU(),
     ]
 
     if num_tasks == 1:
-        encoder = _Encoder(shared_layers=convs)
+        encoder = _Encoder(layers=layers)
         return _Model(num_classes=num_classes, encoder=encoder)
     else:
-        encoders = [_Encoder(shared_layers=convs) for _ in range(num_tasks)]
+        encoders = [_Encoder(layers=layers) for _ in range(num_tasks)]
         return [_Model(num_classes=num_classes, encoder=encoder) for encoder in encoders]
