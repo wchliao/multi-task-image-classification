@@ -33,24 +33,24 @@ def parse_args():
 
 def train(args):
     if args.data == 0:
-        train_data = CIFAR10Loader(batch_size=128, train=True)
-        test_data = CIFAR10Loader(batch_size=128, train=False)
+        train_data = CIFAR10Loader(batch_size=128, train=True, drop_last=True)
+        test_data = CIFAR10Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'binary'
         num_epochs = {
             'single': 30,
             'multi': 150
         }
     elif args.data == 1:
-        train_data = CIFAR100Loader(batch_size=128, train=True)
-        test_data = CIFAR100Loader(batch_size=128, train=False)
+        train_data = CIFAR100Loader(batch_size=128, train=True, drop_last=True)
+        test_data = CIFAR100Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
         num_epochs = {
             'single': 100,
             'multi': 300
         }
     elif args.data == 2:
-        train_data = OmniglotLoader(batch_size=128, train=True)
-        test_data = OmniglotLoader(batch_size=128, train=False)
+        train_data = OmniglotLoader(batch_size=128, train=True, drop_last=True)
+        test_data = OmniglotLoader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
         num_epochs = {
             'single': 30,
@@ -125,13 +125,13 @@ def train(args):
 
 def eval(args):
     if args.data == 0:
-        data = CIFAR10Loader(batch_size=128, train=False)
+        data = CIFAR10Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'binary'
     elif args.data == 1:
-        data = CIFAR100Loader(batch_size=128, train=False)
+        data = CIFAR100Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
     elif args.data == 2:
-        data = OmniglotLoader(batch_size=128, train=False)
+        data = OmniglotLoader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
     else:
         raise ValueError('Unknown data ID: {}'.format(args.data))

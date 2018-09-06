@@ -48,7 +48,7 @@ class BaseDataLoader:
 
 
 class CIFAR10Loader(BaseDataLoader):
-    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=True):
+    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=False):
         super(CIFAR10Loader, self).__init__(batch_size, train, shuffle, drop_last)
         transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
@@ -137,7 +137,7 @@ class CIFAR10Loader(BaseDataLoader):
 
 
 class CIFAR100Loader(BaseDataLoader):
-    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=True):
+    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=False):
         super(CIFAR100Loader, self).__init__(batch_size, train, shuffle, drop_last)
         transform = torchvision.transforms.Compose(
             [torchvision.transforms.ToTensor(),
@@ -238,7 +238,7 @@ class CIFAR100Loader(BaseDataLoader):
 
 
 class OmniglotLoader(BaseDataLoader):
-    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=True):
+    def __init__(self, batch_size=128, train=True, shuffle=True, drop_last=False):
         super(OmniglotLoader, self).__init__(batch_size, train, shuffle, drop_last)
         omniglot_path = './data/omniglot'
 
