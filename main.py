@@ -36,26 +36,17 @@ def train(args):
         train_data = CIFAR10Loader(batch_size=128, train=True, drop_last=True)
         test_data = CIFAR10Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'binary'
-        num_epochs = {
-            'single': 30,
-            'multi': 150
-        }
+        num_epochs = 30
     elif args.data == 1:
         train_data = CIFAR100Loader(batch_size=128, train=True, drop_last=True)
         test_data = CIFAR100Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
-        num_epochs = {
-            'single': 100,
-            'multi': 300
-        }
+        num_epochs = 100
     elif args.data == 2:
         train_data = OmniglotLoader(batch_size=128, train=True, drop_last=True)
         test_data = OmniglotLoader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
-        num_epochs = {
-            'single': 30,
-            'multi': 300 # Need more tests to determine
-        }
+        num_epochs = 300 # Need more tests to determine
     else:
         raise ValueError('Unknown data ID: {}'.format(args.data))
 
@@ -69,37 +60,31 @@ def train(args):
                                 num_channels=num_channels)
         train_data = train_data.get_loader()
         test_data = test_data.get_loader()
-        num_epochs = num_epochs['single']
     elif args.setting == 1:
         agent = StandardAgent(num_classes_single=num_classes_single,
                               num_classes_multi=num_classes_multi,
                               multi_task_type=multi_task_type,
                               num_channels=num_channels)
         train_data = train_data.get_loader()
-        num_epochs = num_epochs['single']
     elif args.setting == 2:
         assert args.task in list(range(num_tasks)), 'Unknown task: {}'.format(args.task)
         agent = SingleTaskAgent(num_classes=num_classes_multi[args.task],
                                 num_channels=num_channels)
         train_data = train_data.get_loader(args.task)
         test_data = test_data.get_loader(args.task)
-        num_epochs = num_epochs['single']
     elif args.setting == 3:
         agent = MultiTaskSeparateAgent(num_classes=num_classes_multi,
                                        num_channels=num_channels)
-        num_epochs = num_epochs['multi']
     elif args.setting == 4:
         prob = np.arange(num_tasks) + 1
         prob = prob / sum(prob)
         agent = MultiTaskSeparateAgent(num_classes=num_classes_multi,
                                        num_channels=num_channels,
                                        task_prob=prob.tolist())
-        num_epochs = num_epochs['multi']
     elif args.setting == 5:
         agent = MultiTaskJointAgent(num_classes=num_classes_multi,
                                     multi_task_type=multi_task_type,
                                     num_channels=num_channels)
-        num_epochs = num_epochs['multi']
     elif args.setting == 6:
         weight = np.arange(num_tasks) + 1
         weight = weight / sum(weight)
@@ -107,7 +92,6 @@ def train(args):
                                     multi_task_type=multi_task_type,
                                     num_channels=num_channels,
                                     loss_weight=weight.tolist())
-        num_epochs = num_epochs['multi']
     else:
         raise ValueError('Unknown setting: {}'.format(args.setting))
 

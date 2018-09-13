@@ -366,7 +366,7 @@ class MultiTaskDataLoader:
         else:
             self.prob = prob
 
-        self.size = len(self.dataloaders[0])
+        self.size = sum([len(d) for d in self.dataloaders])
         self.step = 0
 
 
