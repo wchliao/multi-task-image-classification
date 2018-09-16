@@ -33,7 +33,7 @@ class SingleTaskAgent(BaseAgent):
         self.model.train()
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters())
+        optimizer = optim.SGD(self.model.parameters(), lr=0.1)
         accuracy = []
 
         for epoch in range(num_epochs):
@@ -187,7 +187,7 @@ class MultiTaskSeparateAgent:
             dataloader = train_data.get_loader('multi-task', prob=self.task_prob)
 
         criterion = nn.CrossEntropyLoss()
-        optimizers = [optim.Adam(model.parameters()) for model in self.models]
+        optimizers = [optim.SGD(model.parameters(), lr=0.1) for model in self.models]
         accuracy = []
 
         for epoch in range(num_epochs):
@@ -290,7 +290,7 @@ class MultiTaskJointAgent(MultiTaskSeparateAgent):
         for model in self.models:
             parameters += model.parameters()
         parameters = set(parameters)
-        optimizer = optim.Adam(parameters)
+        optimizer = optim.SGD(parameters, lr=0.1)
 
         accuracy = []
 

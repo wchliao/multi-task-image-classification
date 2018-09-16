@@ -36,17 +36,17 @@ def train(args):
         train_data = CIFAR10Loader(batch_size=128, train=True, drop_last=True)
         test_data = CIFAR10Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'binary'
-        num_epochs = 30
+        num_epochs = 20
     elif args.data == 1:
         train_data = CIFAR100Loader(batch_size=128, train=True, drop_last=True)
         test_data = CIFAR100Loader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
-        num_epochs = 100
+        num_epochs = 20
     elif args.data == 2:
         train_data = OmniglotLoader(batch_size=128, train=True, drop_last=True)
         test_data = OmniglotLoader(batch_size=128, train=False, drop_last=False)
         multi_task_type = 'multiclass'
-        num_epochs = 300 # Need more tests to determine
+        num_epochs = 100 # Need more tests to determine
     else:
         raise ValueError('Unknown data ID: {}'.format(args.data))
 
