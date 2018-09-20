@@ -10,7 +10,7 @@ class BaseAgent:
     def __init__(self):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def train(self, train_data, test_data, save_history, save_path, verbose):
+    def train(self, train_data, test_data, num_epochs, save_history, save_path, verbose):
         raise NotImplementedError
 
     def eval(self, data):
@@ -168,12 +168,11 @@ class StandardAgent(SingleTaskAgent):
             return [c / t for c, t in zip(correct, total)]
 
 
-class MultiTaskSeparateAgent:
+class MultiTaskSeparateAgent(BaseAgent):
     def __init__(self, num_classes, num_channels, task_prob=None):
         super(MultiTaskSeparateAgent, self).__init__()
         self.num_tasks = len(num_classes)
         self.task_prob = task_prob
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.models = [model.to(self.device) for model in Model(num_classes=num_classes, num_channels=num_channels)]
 
 
