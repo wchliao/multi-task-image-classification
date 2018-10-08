@@ -52,7 +52,7 @@ Arguments:
    * `0`: CIFAR-10
    * `1`: CIFAR-100
    * `2`: Omniglot
- * `--task`: Which class to distinguish (for setting `2`) (default: None) 
+ * `--task`: Task ID (for setting `2`) (default: None) 
  * `--save_path`: Path (directory) that model and history are saved. (default: `'.'`)
  * `--save_model`: A flag used to decide whether to save model or not.
  * `--save_history`: A flag used to decide whether to save training history or not.
@@ -78,5 +78,5 @@ Arguments:
    * `0`: CIFAR-10
    * `1`: CIFAR-100
    * `2`: Omniglot
- * `--task`: Which class to distinguish (for setting `2`) (default: None)
+ * `--task`: Task ID (for setting `2`) (default: None)
  * `--save_path`: Path (directory) that model is saved. (default: `'.'`)
